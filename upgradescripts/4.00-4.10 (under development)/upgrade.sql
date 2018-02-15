@@ -554,6 +554,54 @@ set @resources='
   <LocaleResource Name="Admin.Customers.Customers.RewardPoints.Fields.Store.Hint">
     <Value>Choose a store. It''s useful only when you have "Points accumulated for all stores" setting disabled.</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Customers.Customers.RewardPoints.Fields.Date">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Customers.Customers.RewardPoints.Fields.CreatedDate">
+    <Value>Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Customers.Customers.RewardPoints.Fields.EndDate">
+    <Value>End date</Value>
+  </LocaleResource>
+  <LocaleResource Name="RewardPoints.Fields.Date">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="RewardPoints.Fields.CreatedDate">
+    <Value>Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="RewardPoints.Fields.EndDate">
+    <Value>End date</Value>
+  </LocaleResource>
+  <LocaleResource Name="RewardPoints.Message.Expired">
+    <Value>Unused reward points from {0} have expired</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.RewardPoints.RegistrationPointsValidity">
+    <Value>Registration points validity</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.RewardPoints.RegistrationPointsValidity.Hint">
+    <Value>Specify number of days when the points awarded for registration will be valid.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.RewardPoints.RegistrationPointsValidity.Postfix">
+    <Value>Days</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.RewardPoints.PurchasesPointsValidity">
+    <Value>Purchases points validity</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.RewardPoints.PurchasesPointsValidity.Hint">
+    <Value>Specify number of days when the points awarded for purchases will be valid.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.RewardPoints.PurchasesPointsValidity.Postfix">
+    <Value>Days</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Customers.Customers.RewardPoints.Fields.PointsValidity">
+    <Value>Points validity</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Customers.Customers.RewardPoints.Fields.PointsValidity.Hint">
+    <Value>Specify number of days when the awarded points will be valid (only for positive amount of points).</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Customers.Customers.RewardPoints.Fields.PointsValidity.Postfix">
+    <Value>Days</Value>
+  </LocaleResource>
 </Language>
 '
 
@@ -1096,4 +1144,36 @@ GO
 UPDATE [Setting] 
 SET [Name] = N'adminareasettings.useisodateformatinjsonresult' 
 WHERE [Name] = N'adminareasettings.useisodatetimeconverterinjson'
+GO
+
+--new column
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = object_id('[RewardPointsHistory]') AND NAME = 'EndDateUtc')
+BEGIN
+	ALTER TABLE [RewardPointsHistory]
+	ADD [EndDateUtc] DATETIME NULL
+END
+GO
+
+--new column
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = object_id('[RewardPointsHistory]') AND NAME = 'ValidPoints')
+BEGIN
+	ALTER TABLE [RewardPointsHistory]
+	ADD [ValidPoints] INT NULL
+END
+GO
+
+--new setting
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [Name] = N'rewardpointssettings.registrationpointsvalidity')
+BEGIN
+    INSERT [Setting] ([Name], [Value], [StoreId])
+    VALUES (N'rewardpointssettings.registrationpointsvalidity', N'30', 0)
+END
+GO
+
+--new setting
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [Name] = N'rewardpointssettings.purchasespointsvalidity')
+BEGIN
+    INSERT [Setting] ([Name], [Value], [StoreId])
+    VALUES (N'rewardpointssettings.purchasespointsvalidity', N'45', 0)
+END
 GO
